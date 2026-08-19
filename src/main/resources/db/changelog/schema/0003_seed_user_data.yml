@@ -1,0 +1,27 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-seed-admin-user
+      author: admin
+      changes:
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 1
+
+              - column:
+                  name: username
+                  value: admin@example.com
+
+              - column:
+                  name: nick_name
+                  value: Admin
+
+              - column:
+                  name: password_hash
+                  value: "$2a$10$Yj0BaktV2tdOOj/Ir.tRguboxhNJo/gFF1HLx03B5Xdb.cAHow7iW"
+
+              - column:
+                  name: enabled
+                  valueBoolean: true

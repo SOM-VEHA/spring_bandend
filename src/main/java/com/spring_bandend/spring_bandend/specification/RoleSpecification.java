@@ -1,0 +1,41 @@
+package com.spring_bandend.spring_bandend.specification;
+import com.spring_bandend.spring_bandend.entity.Role;
+import com.spring_bandend.spring_bandend.feature.core.role.dto.filter.RoleFilter;
+import com.spring_bandend.spring_bandend.util.PageUtil;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.util.StringUtils;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Pageable;
+import java.util.List;
+public final class RoleSpecification {
+
+    private RoleSpecification() {}
+    private static final String FIELD_ID = "id";
+    private static final String FIELD_NAME = "name";
+    private static final List<String> ALLOWED_SORT_FIELDS = List.of(FIELD_NAME, FIELD_ID);
+    private static Specification<Role> hasName(String name) {
+        return (root, query, cb) -> {
+            if (!StringUtils.hasText(name)) {
+                return null;
+            }
+            return cb.like(cb.lower(root.get(FIELD_NAME)), "%" + name.trim().toLowerCase() + "%");
+        };
+    }
+
+
+    /** WHERE clause: case-insensitive contains on name and/or code. */
+    public static Specification<Role> build(RoleFilter filter) {
+        if (filter == null) {
+            return Specification.allOf(hasName(null));
+        }
+        return Specification.allOf(hasName(filter.getName()));
+    }
+
+    public static Sort sort(RoleFilter filter) {
+        return PageUtil.sort(filter, FIELD_NAME, ALLOWED_SORT_FIELDS);
+    }
+
+    public static Pageable pageable(RoleFilter filter) {
+        return PageUtil.pageable(filter, FIELD_NAME, ALLOWED_SORT_FIELDS);
+    }
+}
