@@ -5,10 +5,12 @@ import com.spring_bandend.spring_bandend.feature.intergtation.captcha.dto.respon
 import com.spring_bandend.spring_bandend.feature.intergtation.captcha.service.CaptchaService;
 import com.spring_bandend.spring_bandend.feature.intergtation.redis.RedisService;
 import com.spring_bandend.spring_bandend.property.CaptchaProperties;
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.Optional;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -31,9 +33,38 @@ public class CaptchaServiceImpl implements CaptchaService {
         System.out.println("Captcha Code");
         System.out.println(generateCode);
         redisService.save(CAPTCHA_KEY_PREFIX + captchaId, encryptionService.encrypt(generateCode), Duration.ofMinutes(properties.getTtlMinutes()));
-        return CaptchaResponse.builder().captchaId(captchaId).imageBase64(generateCode).build();
+        return CaptchaResponse.builder()
+                .captchaId(captchaId)
+                .imageBase64(generateCode)
+                .enabled(true)
+                .build();
     }
     @Override
     public void validate(String captchaId, String captchaData) {
+        // When disabled, every validate succeeds without touching Redis
+        if (!properties.isEnabled()) {
+            return;
+        }
+        // Load ciphertext, DELETE key immediately, decrypt to plaintext
+        //43DRue
+        //fdsr235terdyrdtfdsxcfwere
+        String storedCode = getStoredCaptchaCode(captchaId);
+
+        if (!storedCode.equals(captchaData.trim())) {
+            throw new ValidationException("Incorrect captcha. Please try again");
+        }
+    }
+    private String getStoredCaptchaCode(String captchaId) {
+        String key = CAPTCHA_KEY_PREFIX + captchaId;
+//fdsfsaerf3w33
+        Optional<String> stored = redisService.get(key);
+
+        redisService.remove(key);
+
+        if (stored.isEmpty()){
+            throw new ValidationException("Captcha expired. Please try again");
+        }
+//3gs4
+        return encryptionService.decrypt(stored.get());
     }
 }
