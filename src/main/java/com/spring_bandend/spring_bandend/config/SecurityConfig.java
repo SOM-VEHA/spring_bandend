@@ -43,6 +43,7 @@ public class SecurityConfig {
 
                         // Register, login, change-password — no token required
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/captcha/**").permitAll()
                         // OpenAPI / Swagger UI
 
                         // Everything else needs a valid JWT in SecurityContext
